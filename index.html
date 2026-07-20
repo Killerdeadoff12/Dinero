@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Máquina de Ideas — Genera dinero de cualquier tema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #10233A;
+    --ink-soft: #274462;
+    --gold: #C9A227;
+    --gold-bright: #E8C34A;
+    --paper: #EDEAE3;
+    --paper-dim: #DFDACD;
+    --teal: #2D6A6A;
+    --red-stamp: #A6402A;
+    --line: rgba(16,35,58,0.18);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(201,162,39,0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(45,106,106,0.18), transparent 45%);
+    min-height:100vh;
+    font-family:'Space Grotesk', sans-serif;
+    color: var(--paper);
+    display:flex;
+    justify-content:center;
+    padding: 48px 20px 80px;
+  }
+
+  .stage{
+    width:100%;
+    max-width: 760px;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color: var(--gold-bright);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px;height:1px;
+    background: var(--gold-bright);
+    display:inline-block;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: clamp(34px, 6vw, 54px);
+    line-height:1.02;
+    margin: 0 0 12px;
+    letter-spacing:-0.01em;
+  }
+  h1 em{
+    font-style:italic;
+    font-weight:500;
+    color: var(--gold-bright);
+  }
+
+  .sub{
+    font-size:16px;
+    color: rgba(237,234,227,0.72);
+    max-width: 480px;
+    line-height:1.5;
+    margin-bottom: 36px;
+  }
+
+  .panel{
+    background: var(--ink-soft);
+    border:1px solid rgba(237,234,227,0.14);
+    border-radius: 14px;
+    padding: 22px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    box-shadow: 0 20px 40px -20px rgba(0,0,0,0.5);
+  }
+
+  .panel input{
+    flex:1;
+    background: transparent;
+    border:none;
+    outline:none;
+    color: var(--paper);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:17px;
+    padding: 6px 4px;
+  }
+  .panel input::placeholder{ color: rgba(237,234,227,0.4); }
+
+  .go-btn{
+    background: var(--gold);
+    color: var(--ink);
+    border:none;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding: 14px 20px;
+    border-radius: 9px;
+    cursor:pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+    white-space:nowrap;
+  }
+  .go-btn:hover{ background: var(--gold-bright); transform: translateY(-1px); }
+  .go-btn:active{ transform: translateY(0px) scale(0.98); }
+  .go-btn:disabled{ opacity:0.6; cursor:default; transform:none; }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color: rgba(237,234,227,0.6);
+    border:1px solid rgba(237,234,227,0.2);
+    padding: 6px 12px;
+    border-radius: 100px;
+    cursor:pointer;
+    background:none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .chip:hover{ border-color: var(--gold-bright); color: var(--gold-bright); }
+
+  /* --- Receipt --- */
+  .receipt-wrap{
+    margin-top: 46px;
+    display:flex;
+    justify-content:center;
+    perspective: 1200px;
+  }
+
+  .receipt{
+    width: 100%;
+    max-width: 480px;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 30px 28px 40px;
+    position:relative;
+    font-family:'IBM Plex Mono', monospace;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    opacity:0;
+    transform: translateY(18px) rotateX(4deg);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    clip-path: polygon(
+      0% 0%, 100% 0%, 100% 98%,
+      96% 100%, 92% 97%, 88% 100%, 84% 97%, 80% 100%, 76% 97%, 72% 100%,
+      68% 97%, 64% 100%, 60% 97%, 56% 100%, 52% 97%, 48% 100%, 44% 97%,
+      40% 100%, 36% 97%, 32% 100%, 28% 97%, 24% 100%, 20% 97%, 16% 100%,
+      12% 97%, 8% 100%, 4% 97%, 0% 100%
+    );
+  }
+  .receipt.show{ opacity:1; transform: translateY(0) rotateX(0deg); }
+
+  .receipt-head{
+    text-align:center;
+    border-bottom: 1px dashed var(--line);
+    padding-bottom:16px;
+    margin-bottom: 18px;
+  }
+  .receipt-head .store{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-style:italic;
+    font-size:22px;
+    letter-spacing:0.01em;
+  }
+  .receipt-head .meta{
+    font-size:11px;
+    color: var(--ink-soft);
+    margin-top:6px;
+    letter-spacing:0.04em;
+  }
+
+  .idea{
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .idea:last-of-type{ border-bottom:none; }
+
+  .idea-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+  }
+  .idea-num{
+    font-size:11px;
+    color: var(--teal);
+    font-weight:600;
+  }
+  .idea-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:16px;
+    margin: 4px 0 6px;
+    line-height:1.25;
+  }
+  .idea-desc{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13.5px;
+    line-height:1.5;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .idea-tags{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    font-size:10.5px;
+  }
+  .tag{
+    padding: 3px 8px;
+    border-radius:4px;
+    letter-spacing:0.03em;
+  }
+  .tag.income{ background: rgba(45,106,106,0.15); color: var(--teal); font-weight:600; }
+  .tag.effort{ background: rgba(166,64,42,0.12); color: var(--red-stamp); font-weight:600; }
+  .idea-step{
+    margin-top:10px;
+    font-size:12px;
+    color: var(--ink);
+    background: var(--paper-dim);
+    border-left: 2px solid var(--gold);
+    padding: 8px 10px;
+    line-height:1.5;
+  }
+  .idea-step b{ color: var(--red-stamp); font-style:normal; }
+
+  .receipt-foot{
+    text-align:center;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+    font-size:11px;
+    color: var(--ink-soft);
+    letter-spacing:0.05em;
+  }
+  .stamp{
+    display:inline-block;
+    margin-top:10px;
+    border:2px solid var(--red-stamp);
+    color: var(--red-stamp);
+    font-weight:700;
+    font-family:'Space Grotesk', sans-serif;
+    font-size:12px;
+    letter-spacing:0.1em;
+    padding: 4px 10px;
+    transform: rotate(-3deg);
+    border-radius:3px;
+  }
+
+  .state-msg{
+    margin-top: 40px;
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color: rgba(237,234,227,0.55);
+    min-height: 20px;
+  }
+
+  .dots::after{
+    content:'';
+    animation: dots 1.2s steps(4,end) infinite;
+  }
+  @keyframes dots{
+    0%{content:'';} 25%{content:'.';} 50%{content:'..';} 75%{content:'...';} 100%{content:'';}
+  }
+
+  @media (max-width: 480px){
+    .panel{ flex-direction:column; align-items:stretch; }
+    .go-btn{ width:100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="eyebrow">Máquina de ideas · edición monetización</div>
+    <h1>Convierte <em>cualquier tema</em><br>en un plan para ganar dinero.</h1>
+    <p class="sub">Escribe un tema, hobby o habilidad — la máquina imprime cinco formas reales de sacarle dinero, con el primer paso a dar.</p>
+
+    <div class="panel">
+      <input id="topicInput" type="text" placeholder="ej. cocina mexicana, guitarra, edición de video..." maxlength="80" />
+      <button class="go-btn" id="goBtn">Imprimir ideas →</button>
+    </div>
+    <div class="chips">
+      <button class="chip" data-topic="repostería casera">repostería casera</button>
+      <button class="chip" data-topic="fotografía con celular">fotografía con celular</button>
+      <button class="chip" data-topic="excel y hojas de cálculo">excel</button>
+      <button class="chip" data-topic="cuidado de plantas">plantas</button>
+      <button class="chip" data-topic="videojuegos">videojuegos</button>
+    </div>
+
+    <div class="state-msg" id="stateMsg"></div>
+    <div class="receipt-wrap" id="receiptWrap"></div>
+  </div>
+
+<script>
+const input = document.getElementById('topicInput');
+const goBtn = document.getElementById('goBtn');
+const stateMsg = document.getElementById('stateMsg');
+const receiptWrap = document.getElementById('receiptWrap');
+const chips = document.querySelectorAll('.chip');
+
+chips.forEach(chip => {
+  chip.addEventListener('click', () => {
+    input.value = chip.dataset.topic;
+    generate();
+  });
+});
+
+input.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') generate();
+});
+goBtn.addEventListener('click', generate);
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+
+async function generate(){
+  const topic = input.value.trim();
+  if(!topic){
+    stateMsg.textContent = 'Escribe un tema primero.';
+    return;
+  }
+
+  goBtn.disabled = true;
+  goBtn.textContent = 'Imprimiendo...';
+  receiptWrap.innerHTML = '';
+  stateMsg.innerHTML = 'La máquina está pensando<span class="dots"></span>';
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: `El tema es: "${topic}".
+
+Genera exactamente 5 ideas realistas y variadas para ganar dinero relacionadas con este tema, pensadas para alguien en Latinoamérica sin mucho capital inicial. Varía el modelo de negocio (venta de servicio, producto digital, contenido/creador, freelance, enseñanza, etc).
+
+Responde ÚNICAMENTE con un JSON válido (sin texto antes ni después, sin bloques de código markdown) con esta forma exacta:
+{
+  "ideas": [
+    {
+      "titulo": "string corto y directo, máx 6 palabras",
+      "descripcion": "1-2 frases explicando la idea en términos simples",
+      "ingreso": "string corto, ej. 'bajo', 'medio', 'alto'",
+      "esfuerzo": "string corto, ej. 'bajo', 'medio', 'alto'",
+      "primer_paso": "una acción concreta y específica para empezar esta semana"
+    }
+  ]
+}`
+          }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const textBlock = (data.content || []).find(b => b.type === 'text');
+    if(!textBlock) throw new Error('Sin respuesta de texto');
+
+    let clean = textBlock.text.trim().replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    renderReceipt(topic, parsed.ideas || []);
+    stateMsg.textContent = '';
+  } catch (err) {
+    console.error(err);
+    stateMsg.textContent = 'Se atascó la máquina. Intenta de nuevo.';
+  } finally {
+    goBtn.disabled = false;
+    goBtn.textContent = 'Imprimir ideas →';
+  }
+}
+
+function renderReceipt(topic, ideas){
+  const now = new Date();
+  const fecha = now.toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const hora = now.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+
+  const ideasHtml = ideas.map((idea, i) => `
+    <div class="idea">
+      <div class="idea-row">
+        <span class="idea-num">IDEA ${String(i+1).padStart(2,'0')}</span>
+      </div>
+      <div class="idea-title">${escapeHtml(idea.titulo || '')}</div>
+      <div class="idea-desc">${escapeHtml(idea.descripcion || '')}</div>
+      <div class="idea-tags">
+        <span class="tag income">$ INGRESO: ${escapeHtml((idea.ingreso||'').toUpperCase())}</span>
+        <span class="tag effort">⚙ ESFUERZO: ${escapeHtml((idea.esfuerzo||'').toUpperCase())}</span>
+      </div>
+      <div class="idea-step"><b>PRIMER PASO →</b> ${escapeHtml(idea.primer_paso || '')}</div>
+    </div>
+  `).join('');
+
+  receiptWrap.innerHTML = `
+    <div class="receipt" id="receiptCard">
+      <div class="receipt-head">
+        <div class="store">Máquina de Ideas™</div>
+        <div class="meta">TEMA: ${escapeHtml(topic.toUpperCase())}<br>${fecha} · ${hora}</div>
+      </div>
+      ${ideasHtml}
+      <div class="receipt-foot">
+        GRACIAS POR SU VISITA<br>
+        <span class="stamp">A TRABAJAR</span>
+      </div>
+    </div>
+  `;
+  requestAnimationFrame(() => {
+    document.getElementById('receiptCard').classList.add('show');
+  });
+}
+</script>
+</body>
+</html>
